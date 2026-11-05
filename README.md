@@ -34,6 +34,16 @@ scripts/dev.mjs          개발 서버
 .github/workflows/       main 에 push 되면 빌드해서 GitHub Pages 에 배포
 ```
 
+## 마스코트와 아이콘
+
+- 마스코트 도트 데이터는 `hub/mascot.js`에 있습니다. 글자 하나가 도트 하나입니다.
+- 허브 상단 마스코트는 이 데이터로 그립니다. 가끔 눈을 깜빡이고, 누르면 대사를 합니다.
+- 도트를 고친 뒤 아래 명령을 실행하면 `icons/`의 앱 아이콘과 탭 아이콘이 다시 만들어집니다.
+
+```bash
+node scripts/make-icons.mjs
+```
+
 ## 새 게임 추가
 
 1. 브랜치를 만듭니다: `git switch -c game/<id>`

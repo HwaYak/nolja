@@ -1,4 +1,5 @@
 import * as dl from '../shared/downloads.js';
+import { BODY, blinkRows, toSvg } from './mascot.js';
 
 const $ = (sel) => document.querySelector(sel);
 const shelfEl = $('#shelf');
@@ -291,6 +292,60 @@ async function loadItems() {
   }
   await refreshInstalled();
 }
+
+// ───── 마스코트 ─────
+const mascotEl = $('#mascot');
+const bubbleEl = document.querySelector('.bubble');
+const lineEl = $('#mascot-line');
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FRAME_OPEN = toSvg(BODY, { title: '놀자 마스코트' });
+const FRAME_BLINK = toSvg(blinkRows(), { title: '놀자 마스코트' });
+mascotEl.innerHTML = FRAME_OPEN;
+
+function blink() {
+  mascotEl.innerHTML = FRAME_BLINK;
+  setTimeout(() => { mascotEl.innerHTML = FRAME_OPEN; }, 140);
+}
+if (!reducedMotion) {
+  (function loop() {
+    setTimeout(() => { blink(); loop(); }, 2800 + Math.random() * 2400);
+  })();
+}
+
+function mascotLines() {
+  const lines = [
+    '카트리지를 꽂아 두면 인터넷이 없어도 놀 수 있어요.',
+    '심심하면 랜덤 플레이를 눌러 봐요!',
+    '새 카트리지는 곧 들어와요. 기대해 줘요!',
+  ];
+  if (items.length) {
+    const pick = items[Math.floor(Math.random() * items.length)];
+    lines.push(`오늘은 「${pick.title}」 어때요?`);
+  }
+  lines.push(installed.size ? `보관함에 카트리지가 ${installed.size}개 꽂혀 있어요.` : '아직 보관함이 비어 있어요.');
+  if (!navigator.onLine) return ['지금은 오프라인이에요. 꽂아 둔 카트리지만 할 수 있어요.'];
+  return lines;
+}
+
+let lastLine = '';
+let lineTimer = null;
+mascotEl.addEventListener('click', () => {
+  const pool = mascotLines().filter((l) => l !== lastLine);
+  lastLine = pool[Math.floor(Math.random() * pool.length)] ?? lastLine;
+  lineEl.textContent = lastLine;
+  lineEl.hidden = false;
+  bubbleEl.classList.add('is-talking');
+  mascotEl.classList.remove('is-hop');
+  void mascotEl.offsetWidth;
+  mascotEl.classList.add('is-hop');
+  blink();
+  clearTimeout(lineTimer);
+  lineTimer = setTimeout(() => {
+    lineEl.hidden = true;
+    bubbleEl.classList.remove('is-talking');
+  }, 4200);
+});
+mascotEl.addEventListener('animationend', () => mascotEl.classList.remove('is-hop'));
 
 // 앱 설치 버튼
 let installPrompt = null;

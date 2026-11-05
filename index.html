@@ -8,7 +8,8 @@
   <meta name="theme-color" content="#f3f7ff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#111a30" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="preload" href="shared/fonts/Galmuri11-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="shared/fonts/galmuri.css">
@@ -19,7 +20,7 @@
 <body>
   <header class="top">
     <div class="top__inner">
-      <a class="logo" href="./" aria-label="놀자 홈">놀자</a>
+      <a class="logo" href="./" aria-label="놀자 홈"><img class="logo__head" src="icons/favicon.svg" alt="" width="24" height="24">놀자</a>
       <nav id="tabs" class="tabs" aria-label="분류"></nav>
       <div class="memory" title="보관함에 꽂아 둔 카트리지">
         <span class="memory__label">메모리 카드</span>
@@ -31,9 +32,13 @@
 
   <main class="wrap">
     <section class="hero">
+      <button id="mascot" class="mascot" type="button" aria-label="마스코트에게 말 걸기"></button>
       <div class="hero__text">
-        <h1>오늘은 뭐 하고 놀까?</h1>
-        <p>카트리지를 꽂아 두면 다음부터 내 기기에서 바로 열리고, 인터넷이 없어도 쓸 수 있어요.</p>
+        <div class="bubble">
+          <h1>오늘은 뭐 하고 놀까?</h1>
+          <p id="mascot-line" class="bubble__line" aria-live="polite" hidden></p>
+        </div>
+        <p class="hero__lead">카트리지를 꽂아 두면 다음부터 내 기기에서 바로 열리고, 인터넷이 없어도 쓸 수 있어요.</p>
       </div>
       <div class="hero__side">
         <span id="net" class="net"></span>

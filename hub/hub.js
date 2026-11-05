@@ -1,4 +1,5 @@
 import * as dl from '../shared/downloads.js';
+import { BODY, blinkRows, toSvg } from './mascot.js';
 
 const $ = (sel) => document.querySelector(sel);
 const shelfEl = $('#shelf');
@@ -291,6 +292,105 @@ async function loadItems() {
   }
   await refreshInstalled();
 }
+
+// ───── 마스코트 ─────
+const mascotEl = $('#mascot');
+const artEl = $('#mascot-art');
+const bubbleText = $('#bubble-text');
+const sayEl = $('#mascot-say');
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FRAME_OPEN = toSvg(BODY);
+const FRAME_BLINK = toSvg(blinkRows());
+const DEFAULT_LINE = '오늘은 뭐 하고 놀까?';
+artEl.innerHTML = FRAME_OPEN;
+
+function blink() {
+  artEl.innerHTML = FRAME_BLINK;
+  setTimeout(() => { artEl.innerHTML = FRAME_OPEN; }, 140);
+}
+
+// 말풍선 타자 효과
+let typeTimer = null;
+function typeLine(text) {
+  clearInterval(typeTimer);
+  if (reducedMotion) {
+    bubbleText.textContent = text;
+    return;
+  }
+  const chars = [...text];
+  let n = 0;
+  bubbleText.textContent = '';
+  bubbleText.classList.add('is-typing');
+  typeTimer = setInterval(() => {
+    n++;
+    bubbleText.textContent = chars.slice(0, n).join('');
+    if (n >= chars.length) {
+      clearInterval(typeTimer);
+      bubbleText.classList.remove('is-typing');
+    }
+  }, 45);
+}
+
+// 누르면 떠오르는 도트 하트
+const HEART = '<svg viewBox="0 0 7 6" shape-rendering="crispEdges" width="14" height="12"><path fill="#ff7aa8" d="M1 0h2v1h1V0h2v1h1v2H6v1H5v1H4v1H3V5H2V4H1V3H0V1h1z"/><path fill="#fff" d="M1 1h1v1H1z"/></svg>';
+function hearts() {
+  if (reducedMotion) return;
+  [-18, 4, 22].forEach((dx, i) => {
+    const h = document.createElement('span');
+    h.className = 'heart';
+    h.innerHTML = HEART;
+    h.style.setProperty('--dx', `${dx}px`);
+    h.style.animationDelay = `${i * 90}ms`;
+    h.style.marginLeft = '-7px';
+    mascotEl.append(h);
+    h.addEventListener('animationend', () => h.remove());
+  });
+}
+
+if (!reducedMotion) {
+  setTimeout(() => typeLine(DEFAULT_LINE), 380);
+} else {
+  mascotEl.classList.remove('is-enter');
+}
+if (!reducedMotion) {
+  (function loop() {
+    setTimeout(() => { blink(); loop(); }, 2800 + Math.random() * 2400);
+  })();
+}
+
+function mascotLines() {
+  const lines = [
+    '카트리지를 꽂아 두면 인터넷이 없어도 놀 수 있어요.',
+    '심심하면 랜덤 플레이를 눌러 봐요!',
+    '새 카트리지는 곧 들어와요. 기대해 줘요!',
+  ];
+  if (items.length) {
+    const pick = items[Math.floor(Math.random() * items.length)];
+    lines.push(`오늘은 「${pick.title}」 어때요?`);
+  }
+  lines.push(installed.size ? `보관함에 카트리지가 ${installed.size}개 꽂혀 있어요.` : '아직 보관함이 비어 있어요.');
+  if (!navigator.onLine) return ['지금은 오프라인이에요. 꽂아 둔 카트리지만 할 수 있어요.'];
+  return lines;
+}
+
+let lastLine = '';
+let lineTimer = null;
+mascotEl.addEventListener('click', () => {
+  const pool = mascotLines().filter((l) => l !== lastLine);
+  lastLine = pool[Math.floor(Math.random() * pool.length)] ?? lastLine;
+  typeLine(lastLine);
+  sayEl.textContent = lastLine;
+  mascotEl.classList.remove('is-enter', 'is-hop');
+  void mascotEl.offsetWidth;
+  mascotEl.classList.add('is-hop');
+  blink();
+  hearts();
+  clearTimeout(lineTimer);
+  lineTimer = setTimeout(() => typeLine(DEFAULT_LINE), 4500);
+});
+mascotEl.addEventListener('animationend', (e) => {
+  if (e.target === mascotEl) mascotEl.classList.remove('is-hop', 'is-enter');
+});
 
 // 앱 설치 버튼
 let installPrompt = null;

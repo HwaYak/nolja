@@ -2,31 +2,69 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>놀자</title>
-  <style>
-    :root { color-scheme: light dark; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
-      background: #fffaf0;
-      color: #222;
-    }
-    @media (prefers-color-scheme: dark) {
-      body { background: #16141a; color: #eee; }
-    }
-    main { text-align: center; padding: 16px; }
-    h1 { font-size: clamp(2.5rem, 10vw, 5rem); margin: 0; }
-    p { opacity: .7; }
-  </style>
+  <meta name="description" content="심심할 때 하나씩 꺼내 하는 웹 게임 모음">
+  <meta name="theme-color" content="#ff5a4e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="hub/hub.css">
+  <script type="module" src="hub/hub.js"></script>
 </head>
 <body>
-  <main>
-    <h1>놀자</h1>
-    <p>게임 준비 중입니다.</p>
+  <header class="top">
+    <div class="top__inner">
+      <a class="logo" href="./" aria-label="놀자 홈">
+        <img src="icons/icon.svg" alt="" width="36" height="36">
+        <span>놀자</span>
+      </a>
+      <label class="search">
+        <span class="sr-only">게임 검색</span>
+        <input id="search" type="search" placeholder="게임 찾기" autocomplete="off">
+      </label>
+      <button id="install" class="btn btn--ghost" type="button" hidden>앱 설치</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="intro">
+      <h1>오늘은 뭐 하고 놀까?</h1>
+      <p>게임을 <strong>받아 두면</strong> 다음부터는 내 기기에서 바로 열리고, 인터넷이 없어도 할 수 있어요.</p>
+      <p class="status">
+        <span id="net" class="pill"></span>
+        <span id="storage" class="pill" hidden></span>
+      </p>
+    </section>
+
+    <p id="message" class="message" hidden></p>
+    <ul id="games" class="grid" aria-live="polite"></ul>
   </main>
+
+  <footer class="foot">
+    <p>놀자 · <a href="https://github.com/HwaYak/nolja">GitHub</a></p>
+  </footer>
+
+  <template id="card">
+    <li class="card">
+      <a class="card__thumb" data-play>
+        <img alt="" loading="lazy">
+      </a>
+      <div class="card__body">
+        <div class="card__head">
+          <h2 class="card__title"></h2>
+          <span class="badge"></span>
+        </div>
+        <p class="card__desc"></p>
+        <p class="card__meta"></p>
+        <div class="progress" hidden><span></span></div>
+        <div class="card__actions">
+          <a class="btn btn--primary" data-play>플레이</a>
+          <button class="btn" type="button" data-download>받기</button>
+          <button class="btn btn--ghost" type="button" data-remove hidden>삭제</button>
+        </div>
+      </div>
+    </li>
+  </template>
 </body>
 </html>

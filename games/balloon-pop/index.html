@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>풍선 팡 · 놀자</title>
+  <link rel="icon" href="assets/balloon-red.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../shared/nolja.js"></script>
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <div id="stage" class="stage">
+    <div class="cloud cloud--1"></div>
+    <div class="cloud cloud--2"></div>
+    <div class="cloud cloud--3"></div>
+  </div>
+
+  <div class="hud" aria-live="polite">
+    <span class="hud__item">점수 <b id="score">0</b></span>
+    <span class="hud__item">남은 시간 <b id="time">30</b></span>
+  </div>
+
+  <section id="start" class="screen">
+    <div class="panel">
+      <h1>풍선 팡</h1>
+      <p>30초 동안 떠오르는 풍선을 눌러서 터뜨리세요.</p>
+      <ul class="legend">
+        <li><img src="assets/balloon-red.svg" alt=""> +1</li>
+        <li><img src="assets/balloon-gold.svg" alt=""> +5</li>
+        <li><img src="assets/balloon-black.svg" alt=""> −3</li>
+      </ul>
+      <p class="best">최고 점수 <b id="best-start">0</b></p>
+      <button id="play" class="big-btn" type="button">시작!</button>
+    </div>
+  </section>
+
+  <section id="result" class="screen" hidden>
+    <div class="panel">
+      <h2>끝!</h2>
+      <p class="final"><b id="final">0</b>점</p>
+      <p id="new-best" class="new-best" hidden>최고 기록!</p>
+      <p class="best">최고 점수 <b id="best-result">0</b></p>
+      <button id="again" class="big-btn" type="button">한 판 더</button>
+    </div>
+  </section>
+</body>
+</html>

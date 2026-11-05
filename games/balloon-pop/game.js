@@ -5,20 +5,30 @@
 
   // 종류별 이미지, 점수, 등장 가중치, 속도 배율
   const KINDS = [
-    { name: 'red', points: 1, weight: 22, speed: 1 },
-    { name: 'blue', points: 1, weight: 22, speed: 1 },
-    { name: 'yellow', points: 1, weight: 22, speed: 1 },
-    { name: 'green', points: 1, weight: 22, speed: 1 },
-    { name: 'gold', points: 5, weight: 5, speed: 1.6 },
-    { name: 'black', points: -3, weight: 12, speed: 0.9 },
+    { name: 'red', points: 1, weight: 22, speed: 1, color: '#ff5a5f' },
+    { name: 'blue', points: 1, weight: 22, speed: 1, color: '#4d8dff' },
+    { name: 'yellow', points: 1, weight: 22, speed: 1, color: '#ffd447' },
+    { name: 'green', points: 1, weight: 22, speed: 1, color: '#4cd18a' },
+    { name: 'gold', points: 5, weight: 5, speed: 1.6, color: '#ffe27a' },
+    { name: 'black', points: -3, weight: 12, speed: 0.9, color: '#4a4652' },
   ];
+  const TIME_SLOTS = 10;
   const TOTAL_WEIGHT = KINDS.reduce((s, k) => s + k.weight, 0);
 
   const $ = (id) => document.getElementById(id);
   const stage = $('stage');
-  const hud = document.querySelector('.hud');
+  const timeBox = $('time-box');
+  const timeBar = $('time-bar');
   const scoreEl = $('score');
   const timeEl = $('time');
+  for (let i = 0; i < TIME_SLOTS; i++) timeBar.append(document.createElement('i'));
+  const timeCells = [...timeBar.children];
+  function renderTime() {
+    timeEl.textContent = Math.ceil(timeLeft);
+    const on = Math.ceil((timeLeft / DURATION) * TIME_SLOTS);
+    timeCells.forEach((c, i) => c.classList.toggle('on', i < on));
+    timeBox.classList.toggle('is-hurry', running && timeLeft <= 5);
+  }
   const startScreen = $('start');
   const resultScreen = $('result');
 
@@ -110,8 +120,10 @@
     const W = stage.clientWidth;
     const H = stage.clientHeight;
     const kind = pickKind();
-    const w = Math.max(56, Math.min(96, W * 0.14));
-    const h = w * 1.4;
+    // 12×16 도트 스프라이트를 정수 배율로 키워 선명하게
+    const scale = Math.max(4, Math.min(7, Math.round((W * 0.13) / 12)));
+    const w = 12 * scale;
+    const h = 16 * scale;
     const el = document.createElement('img');
     el.src = `assets/balloon-${kind.name}.svg`;
     el.alt = '';
@@ -139,9 +151,30 @@
     place(b, 0);
   }
 
+  // 도트 느낌이 나도록 4px 단위로 움직인다
+  const snap = (v) => Math.round(v / 4) * 4;
   function place(b, t) {
     const sway = Math.sin(t * 2 + b.phase) * 8;
-    b.el.style.transform = `translate(${b.x + sway}px, ${b.y}px)`;
+    b.el.style.transform = `translate(${snap(b.x + sway)}px, ${snap(b.y)}px)`;
+  }
+
+  // 터질 때 사방으로 튀는 도트 조각
+  const BIT_DIRS = [[-1, -1], [0, -1.3], [1, -1], [-1.3, 0], [1.3, 0], [-1, 1], [0, 1.3], [1, 1]];
+  function burst(b) {
+    const cx = b.x + b.w / 2 - 4;
+    const cy = b.y + b.h * 0.33 - 4;
+    const dist = b.w * 0.55;
+    for (const [dx, dy] of BIT_DIRS) {
+      const bit = document.createElement('span');
+      bit.className = 'bit';
+      bit.style.left = `${snap(cx)}px`;
+      bit.style.top = `${snap(cy)}px`;
+      bit.style.setProperty('--c', b.kind.color);
+      bit.style.setProperty('--dx', `${snap(dx * dist)}px`);
+      bit.style.setProperty('--dy', `${snap(dy * dist)}px`);
+      stage.appendChild(bit);
+      bit.addEventListener('animationend', () => bit.remove());
+    }
   }
 
   function pop(b) {
@@ -156,20 +189,21 @@
     const cls = b.kind.points < 0 ? 'minus' : b.kind.name === 'gold' ? 'gold' : 'plus';
     text.className = `float-text float-text--${cls}`;
     text.textContent = b.kind.points > 0 ? `+${b.kind.points}` : `${b.kind.points}`;
-    text.style.left = `${b.x + b.w / 2 - 14}px`;
-    text.style.top = `${b.y + b.h * 0.25}px`;
+    text.style.left = `${snap(b.x + b.w / 2 - 14)}px`;
+    text.style.top = `${snap(b.y + b.h * 0.2)}px`;
     stage.appendChild(text);
     setTimeout(() => text.remove(), 700);
 
+    burst(b);
     b.el.classList.add('is-popped');
-    setTimeout(() => b.el.remove(), 180);
+    setTimeout(() => b.el.remove(), 60);
     balloons = balloons.filter((x) => x !== b);
   }
 
   function clearBalloons() {
     balloons.forEach((b) => b.el.remove());
     balloons = [];
-    stage.querySelectorAll('.float-text').forEach((el) => el.remove());
+    stage.querySelectorAll('.float-text, .bit').forEach((el) => el.remove());
   }
 
   function tick(ts) {
@@ -178,8 +212,7 @@
     lastTs = ts;
 
     timeLeft = Math.max(0, timeLeft - dt);
-    timeEl.textContent = Math.ceil(timeLeft);
-    hud.classList.toggle('is-hurry', timeLeft <= 5);
+    renderTime();
 
     spawnIn -= dt;
     if (spawnIn <= 0) {
@@ -210,17 +243,17 @@
     timeLeft = DURATION;
     spawnIn = 0;
     scoreEl.textContent = '0';
-    timeEl.textContent = String(DURATION);
     startScreen.hidden = true;
     resultScreen.hidden = true;
     running = true;
+    renderTime();
     lastTs = performance.now();
     requestAnimationFrame(tick);
   }
 
   function finish() {
     running = false;
-    hud.classList.remove('is-hurry');
+    renderTime();
     const isBest = score > best;
     if (isBest) {
       best = score;
@@ -236,6 +269,7 @@
     }, 400);
   }
 
+  renderTime();
   $('best-start').textContent = best;
   $('play').addEventListener('click', start);
   $('again').addEventListener('click', start);

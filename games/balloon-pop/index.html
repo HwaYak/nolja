@@ -14,24 +14,33 @@
     <div class="cloud cloud--1"></div>
     <div class="cloud cloud--2"></div>
     <div class="cloud cloud--3"></div>
+    <div class="cloud cloud--4"></div>
   </div>
 
-  <div class="hud" aria-live="polite">
-    <span class="hud__item">점수 <b id="score">0</b></span>
-    <span class="hud__item">남은 시간 <b id="time">30</b></span>
+  <div class="hud">
+    <div class="hud__box">
+      <span class="hud__label">점수</span>
+      <b id="score" class="hud__value">0</b>
+    </div>
+    <div id="time-box" class="hud__box hud__box--time">
+      <span class="hud__label">시간</span>
+      <b id="time" class="hud__value">30</b>
+      <span id="time-bar" class="gauge" aria-hidden="true"></span>
+    </div>
   </div>
 
   <section id="start" class="screen">
     <div class="panel">
+      <img class="panel__hero" src="assets/balloon-red.svg" alt="" width="48" height="64">
       <h1>풍선 팡</h1>
       <p>30초 동안 떠오르는 풍선을 눌러서 터뜨리세요.</p>
       <ul class="legend">
-        <li><img src="assets/balloon-red.svg" alt=""> +1</li>
-        <li><img src="assets/balloon-gold.svg" alt=""> +5</li>
-        <li><img src="assets/balloon-black.svg" alt=""> −3</li>
+        <li><img src="assets/balloon-blue.svg" alt=""><span>+1</span></li>
+        <li><img src="assets/balloon-gold.svg" alt=""><span>+5</span></li>
+        <li><img src="assets/balloon-black.svg" alt=""><span>−3</span></li>
       </ul>
       <p class="best">최고 점수 <b id="best-start">0</b></p>
-      <button id="play" class="big-btn" type="button">시작!</button>
+      <button id="play" class="pbtn" type="button">▶ 시작!</button>
     </div>
   </section>
 
@@ -39,9 +48,9 @@
     <div class="panel">
       <h2>끝!</h2>
       <p class="final"><b id="final">0</b>점</p>
-      <p id="new-best" class="new-best" hidden>최고 기록!</p>
+      <p id="new-best" class="new-best" hidden>★ 최고 기록! ★</p>
       <p class="best">최고 점수 <b id="best-result">0</b></p>
-      <button id="again" class="big-btn" type="button">한 판 더</button>
+      <button id="again" class="pbtn" type="button">↻ 한 판 더</button>
     </div>
   </section>
 </body>

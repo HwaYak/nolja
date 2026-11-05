@@ -4,65 +4,79 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>놀자</title>
-  <meta name="description" content="심심할 때 하나씩 꺼내 하는 웹 게임 모음">
-  <meta name="theme-color" content="#ff5a4e">
+  <meta name="description" content="받아 두면 오프라인에서도 열리는 도트 감성 웹 게임·도구 모음">
+  <meta name="theme-color" content="#f3f7ff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111a30" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preload" href="shared/fonts/Galmuri11-Bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="shared/fonts/galmuri.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="hub/hub.css">
   <script type="module" src="hub/hub.js"></script>
 </head>
 <body>
   <header class="top">
     <div class="top__inner">
-      <a class="logo" href="./" aria-label="놀자 홈">
-        <img src="icons/icon.svg" alt="" width="36" height="36">
-        <span>놀자</span>
-      </a>
-      <label class="search">
-        <span class="sr-only">게임 검색</span>
-        <input id="search" type="search" placeholder="게임 찾기" autocomplete="off">
-      </label>
-      <button id="install" class="btn btn--ghost" type="button" hidden>앱 설치</button>
+      <a class="logo" href="./" aria-label="놀자 홈">놀자</a>
+      <nav id="tabs" class="tabs" aria-label="분류"></nav>
+      <div class="memory" title="보관함에 꽂아 둔 카트리지">
+        <span class="memory__label">메모리 카드</span>
+        <span id="memory-bar" class="memory__bar" aria-hidden="true"></span>
+        <span id="memory-text" class="memory__text"></span>
+      </div>
     </div>
   </header>
 
   <main class="wrap">
-    <section class="intro">
-      <h1>오늘은 뭐 하고 놀까?</h1>
-      <p>게임을 <strong>받아 두면</strong> 다음부터는 내 기기에서 바로 열리고, 인터넷이 없어도 할 수 있어요.</p>
-      <p class="status">
-        <span id="net" class="pill"></span>
-        <span id="storage" class="pill" hidden></span>
-      </p>
+    <section class="hero">
+      <div class="hero__text">
+        <h1>오늘은 뭐 하고 놀까?</h1>
+        <p>카트리지를 꽂아 두면 다음부터 내 기기에서 바로 열리고, 인터넷이 없어도 쓸 수 있어요.</p>
+      </div>
+      <div class="hero__side">
+        <span id="net" class="net"></span>
+        <button id="random" class="pbtn pbtn--yellow" type="button"><i data-icon="dice"></i>랜덤 플레이</button>
+      </div>
     </section>
 
-    <p id="message" class="message" hidden></p>
-    <ul id="games" class="grid" aria-live="polite"></ul>
+    <div class="toolbar">
+      <label class="search">
+        <i data-icon="search"></i>
+        <span class="sr-only">검색</span>
+        <input id="search" type="search" placeholder="카트리지 찾기" autocomplete="off">
+      </label>
+      <button id="install" class="pbtn" type="button" hidden><i data-icon="download"></i>앱 설치</button>
+    </div>
+
+    <p id="message" class="empty" hidden></p>
+    <ul id="shelf" class="shelf" aria-live="polite"></ul>
   </main>
 
   <footer class="foot">
-    <p>놀자 · <a href="https://github.com/HwaYak/nolja">GitHub</a></p>
+    <p>놀자 · <a href="https://github.com/HwaYak/nolja">GitHub</a> · 글꼴 <a href="https://github.com/quiple/galmuri">갈무리</a></p>
   </footer>
 
-  <template id="card">
-    <li class="card">
-      <a class="card__thumb" data-play>
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <template id="cart">
+    <li class="cart">
+      <div class="cart__head">
+        <span class="kind"></span>
+        <span class="state"></span>
+      </div>
+      <a class="cart__label" data-play tabindex="-1">
         <img alt="" loading="lazy">
       </a>
-      <div class="card__body">
-        <div class="card__head">
-          <h2 class="card__title"></h2>
-          <span class="badge"></span>
-        </div>
-        <p class="card__desc"></p>
-        <p class="card__meta"></p>
-        <div class="progress" hidden><span></span></div>
-        <div class="card__actions">
-          <a class="btn btn--primary" data-play>플레이</a>
-          <button class="btn" type="button" data-download>받기</button>
-          <button class="btn btn--ghost" type="button" data-remove hidden>삭제</button>
-        </div>
+      <h2 class="cart__title"></h2>
+      <p class="cart__desc"></p>
+      <p class="cart__meta"></p>
+      <div class="gauge" hidden></div>
+      <div class="cart__actions">
+        <a class="pbtn pbtn--blue" data-play><i data-icon="play"></i>플레이</a>
+        <button class="pbtn" type="button" data-download><i data-icon="download"></i><span data-label>꽂기</span></button>
+        <button class="pbtn pbtn--icon" type="button" data-remove title="빼기 (받아 둔 파일 삭제)" aria-label="카트리지 빼기" hidden><i data-icon="eject"></i></button>
       </div>
     </li>
   </template>

@@ -14,6 +14,7 @@ node scripts/dev.mjs
 ```
 
 - http://localhost:8080/ 에서 열립니다. 파일을 고치면 자동으로 다시 빌드되니 새로고침만 하면 됩니다.
+- `scripts/` 안의 파일을 고쳤다면 개발 서버를 껐다가 다시 켜세요.
 - 서비스 워커가 예전 파일을 보여 주는 것 같으면 `Ctrl+Shift+R`(강력 새로고침)을 누르세요.
 - 빌드만 하려면 `node scripts/build.mjs` → 결과는 `_site/` (git에는 올리지 않음)
 
@@ -44,12 +45,17 @@ scripts/dev.mjs          개발 서버
      "title": "게임 이름",
      "description": "한두 줄 설명",
      "thumbnail": "thumb.svg",
+     "kind": "game",
      "tags": ["캐주얼"],
+     "color": "sky",
      "order": 100
    }
    ```
 
+   - `kind`는 카트리지 종류입니다: `game`(게임), `tool`(도구). 비우면 `game`.
    - `order`가 작을수록 목록 앞에 나옵니다.
+   - `color`는 허브 카드의 파스텔 색입니다: `sky`, `lavender`, `mint`, `peach`, `butter`, `pink`. 비우면 id에 따라 자동으로 정해집니다.
+   - `"featured": true`인 게임은 허브 맨 앞에 넓은 카드로 나옵니다. 없으면 목록 첫 게임이 그 자리에 옵니다.
    - 리소스 목록, 용량, 버전은 빌드가 자동으로 계산합니다. 따로 적지 않습니다.
 4. 게임 페이지에서 공용 SDK를 불러오면 "← 놀자" 버튼과 세이브 기능을 쓸 수 있습니다.
 

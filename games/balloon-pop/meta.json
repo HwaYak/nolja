@@ -3,5 +3,7 @@
   "description": "30초 동안 떠오르는 풍선을 최대한 많이 터뜨리세요. 금색은 +5, 검은 풍선은 -3!",
   "thumbnail": "thumb.svg",
   "tags": ["캐주얼", "반응속도"],
+  "color": "sky",
+  "featured": true,
   "order": 10
 }

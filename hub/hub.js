@@ -1,4 +1,5 @@
 import * as dl from '../shared/downloads.js';
+import * as rec from '../shared/records.js';
 import { BODY, blinkRows, toSvg } from './mascot.js';
 
 const $ = (sel) => document.querySelector(sel);
@@ -18,7 +19,9 @@ const KIND_LABELS = { game: '게임', tool: '도구' };
 const TONES = ['sky', 'lavender', 'mint', 'peach', 'butter', 'pink'];
 const TAB_HOME = 'home';
 const TAB_SHELF = 'shelf';
+const TAB_RECORDS = 'records';
 const MEMORY_SLOTS = 8;
+const GUEST = '손님';
 
 // 10×10 픽셀 아이콘: [x, y, w, h]
 const ICONS = {
@@ -29,6 +32,8 @@ const ICONS = {
   check: [[1, 5, 2, 2], [3, 6, 2, 2], [5, 4, 2, 2], [7, 2, 2, 2]],
   search: [[2, 0, 4, 1], [1, 1, 1, 1], [6, 1, 1, 1], [0, 2, 1, 4], [7, 2, 1, 4], [1, 6, 1, 1], [6, 6, 1, 1], [2, 7, 4, 1], [7, 7, 1, 1], [8, 8, 2, 2]],
   dice: [[0, 0, 10, 1], [0, 9, 10, 1], [0, 1, 1, 8], [9, 1, 1, 8], [2, 2, 2, 2], [6, 6, 2, 2], [4, 4, 2, 2]],
+  upload: [[4, 0, 2, 1], [3, 1, 4, 1], [2, 2, 6, 1], [4, 3, 2, 3], [1, 8, 8, 2]],
+  pencil: [[7, 0, 2, 1], [6, 1, 4, 1], [5, 2, 4, 1], [4, 3, 4, 1], [3, 4, 4, 1], [2, 5, 4, 1], [1, 6, 4, 1], [1, 7, 3, 1], [0, 8, 3, 1], [0, 9, 2, 1]],
 };
 
 function icon(name) {
@@ -145,6 +150,11 @@ function renderCart(item) {
 
   el.querySelector('[data-remove]').hidden = !(state === 'ok' || state === 'new');
 
+  const s = rec.statsOf(item.id);
+  const recordEl = el.querySelector('.cart__record');
+  recordEl.hidden = !s.plays && s.best == null;
+  recordEl.textContent = recordText(s);
+
   const playable = online || state === 'ok' || state === 'new';
   el.querySelectorAll('[data-play]').forEach((a) => {
     a.setAttribute('aria-disabled', String(!playable));
@@ -153,8 +163,15 @@ function renderCart(item) {
   return el;
 }
 
+function recordText(s) {
+  const parts = [];
+  if (s.best != null) parts.push(`최고 ${s.best}`);
+  if (s.plays) parts.push(`${s.plays}판`);
+  return parts.join(' · ');
+}
+
 function inTab(item) {
-  if (tab === TAB_HOME) return true;
+  if (tab === TAB_HOME || tab === TAB_RECORDS) return true;
   if (tab === TAB_SHELF) return installed.has(item.id);
   return item.kind === tab;
 }
@@ -170,6 +187,7 @@ function renderTabs() {
     { id: TAB_HOME, label: '홈' },
     ...Object.entries(KIND_LABELS).map(([id, label]) => ({ id, label, count: items.filter((i) => i.kind === id).length })),
     { id: TAB_SHELF, label: '보관함', count: installed.size },
+    { id: TAB_RECORDS, label: '기록', count: items.filter((i) => rec.statsOf(i.id).plays).length },
   ];
   tabsEl.replaceChildren(...list.map((t) => {
     const b = document.createElement('button');
@@ -194,15 +212,196 @@ function renderTabs() {
 
 function render() {
   const visible = items.filter(matches);
-  shelfEl.replaceChildren(...visible.map(renderCart));
+  const onRecords = tab === TAB_RECORDS;
+  shelfEl.hidden = onRecords;
+  recordsEl.hidden = !onRecords || !items.length;
+  if (onRecords) renderRecords(visible);
+  else shelfEl.replaceChildren(...visible.map(renderCart));
 
   let msg = '';
   if (!items.length) msg = '아직 선반이 비어 있어요. 곧 채워질 거예요.';
+  else if (onRecords) msg = '';
   else if (!visible.length && searchEl.value.trim()) msg = '찾는 카트리지가 없어요.';
   else if (!visible.length && tab === TAB_SHELF) msg = '보관함이 비어 있어요. 마음에 드는 카트리지를 꽂아 보세요.';
   else if (!visible.length) msg = `${KIND_LABELS[tab] ?? ''} 카트리지는 준비 중이에요.`;
   messageEl.textContent = msg;
   messageEl.hidden = !msg;
+}
+
+// ───── 플레이어 카드 ─────
+const nameView = $('#name-view');
+const nameForm = $('#name-form');
+const nameInput = $('#name-input');
+const recordsEl = $('#records');
+const slotsEl = $('#slots');
+
+const displayName = () => rec.getName() || GUEST;
+
+function renderPlayer() {
+  let plays = 0;
+  let time = 0;
+  for (const item of items) {
+    const s = rec.statsOf(item.id);
+    plays += s.plays;
+    time += s.time;
+  }
+  const { lv, title } = rec.levelOf(plays);
+  $('#player-name').textContent = displayName();
+  $('#player-level').textContent = `Lv.${lv} ${title}`;
+  $('#stat-plays').textContent = plays;
+  $('#stat-time').textContent = rec.formatTime(time);
+  $('#stat-carts').textContent = installed.size;
+}
+
+function openNameForm() {
+  nameInput.value = rec.getName();
+  nameView.hidden = true;
+  nameForm.hidden = false;
+  nameInput.focus();
+  nameInput.select();
+}
+
+function closeNameForm(saveIt) {
+  if (nameForm.hidden) return;
+  if (saveIt) {
+    const before = rec.getName();
+    const name = rec.setName(nameInput.value);
+    if (name !== before) {
+      typeLine(name ? `반가워요, ${name}!` : '이름은 언제든 다시 정할 수 있어요.');
+      scheduleDefaultLine();
+    }
+  }
+  nameForm.hidden = true;
+  nameView.hidden = false;
+  renderPlayer();
+  renderRecordsHead();
+}
+
+$('#name-edit').addEventListener('click', openNameForm);
+nameForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  closeNameForm(true);
+  $('#name-edit').focus();
+});
+nameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeNameForm(false);
+    $('#name-edit').focus();
+  }
+});
+nameForm.addEventListener('focusout', (e) => {
+  if (!nameForm.contains(e.relatedTarget)) closeNameForm(true);
+});
+
+// ───── 기록 탭 ─────
+function renderRecordsHead() {
+  $('#records-name').textContent = displayName();
+  const played = items.filter((i) => rec.statsOf(i.id).plays).length;
+  $('#records-count').textContent = `기록 ${played} / ${items.length}`;
+}
+
+function renderRecords(list) {
+  renderRecordsHead();
+  const rows = list.map((item) => ({ item, s: rec.statsOf(item.id) }));
+  rows.sort((a, b) => (b.s.last ?? 0) - (a.s.last ?? 0));
+  const online = navigator.onLine;
+  slotsEl.replaceChildren(...rows.map(({ item, s }, i) => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    const empty = !s.plays && s.best == null;
+    a.className = `slot${empty ? ' slot--empty' : ''} tone-${toneOf(item)}`;
+    a.href = `games/${item.id}/`;
+    if (!online && !installed.has(item.id)) a.setAttribute('aria-disabled', 'true');
+
+    const no = document.createElement('span');
+    no.className = 'slot__no';
+    no.textContent = String(i + 1).padStart(2, '0');
+
+    const thumb = document.createElement('span');
+    thumb.className = 'slot__thumb';
+    if (item.thumbnail) {
+      const img = document.createElement('img');
+      img.src = `games/${item.id}/${item.thumbnail}`;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.addEventListener('error', () => img.remove());
+      thumb.append(img);
+    }
+
+    const title = document.createElement('span');
+    title.className = 'slot__title';
+    title.textContent = item.title;
+
+    const best = document.createElement('span');
+    best.className = 'slot__best';
+    best.textContent = s.best != null ? `최고 ${s.best}` : empty ? '' : '기록 없음';
+    best.hidden = !best.textContent;
+
+    const meta = document.createElement('span');
+    meta.className = 'slot__meta';
+    meta.textContent = empty
+      ? '아직 안 해 봤어요'
+      : [`${s.plays}판`, rec.formatTime(s.time), rec.formatAgo(s.last)].filter(Boolean).join(' · ');
+
+    a.append(no, thumb, title, best, meta);
+    li.append(a);
+    return li;
+  }));
+  if (!rows.length) {
+    const li = document.createElement('li');
+    li.className = 'slots__none';
+    li.textContent = '찾는 기록이 없어요.';
+    slotsEl.append(li);
+  }
+}
+
+function exportSave() {
+  const save = rec.exportSave();
+  const blob = new Blob([JSON.stringify(save, null, 2)], { type: 'application/json' });
+  const d = new Date();
+  const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `nolja-save-${stamp}.json`;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast('세이브 파일을 내보냈어요.');
+}
+
+async function importSave(file) {
+  let obj;
+  try {
+    obj = JSON.parse(await file.text());
+  } catch {
+    obj = null;
+  }
+  const count = rec.checkSave(obj);
+  if (count == null) {
+    toast('놀자 세이브 파일이 아니에요.');
+    return;
+  }
+  if (!confirm(`세이브를 가져올까요?\n같은 게임의 기록은 파일 내용으로 바뀌어요. (${count}개 항목)`)) return;
+  rec.importSave(obj);
+  toast('세이브를 가져왔어요!');
+  refreshRecords();
+}
+
+$('#save-export').addEventListener('click', exportSave);
+$('#save-import').addEventListener('click', () => $('#save-file').click());
+$('#save-file').addEventListener('change', (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
+  if (file) importSave(file);
+});
+
+/** 게임에서 돌아왔을 때 등 기록이 바뀌었을 수 있을 때 */
+function refreshRecords() {
+  if (!items.length) return;
+  renderPlayer();
+  renderTabs();
+  render();
 }
 
 function renderNet() {
@@ -239,6 +438,7 @@ async function refreshInstalled() {
   renderTabs();
   render();
   renderMemory();
+  renderPlayer();
 }
 
 async function onDownload(item) {
@@ -301,7 +501,10 @@ const sayEl = $('#mascot-say');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FRAME_OPEN = toSvg(BODY);
 const FRAME_BLINK = toSvg(blinkRows());
-const DEFAULT_LINE = '오늘은 뭐 하고 놀까?';
+const defaultLine = () => {
+  const name = rec.getName();
+  return name ? `${name}, 오늘은 뭐 하고 놀까?` : '오늘은 뭐 하고 놀까?';
+};
 artEl.innerHTML = FRAME_OPEN;
 
 function blink() {
@@ -348,9 +551,10 @@ function hearts() {
 }
 
 if (!reducedMotion) {
-  setTimeout(() => typeLine(DEFAULT_LINE), 380);
+  setTimeout(() => typeLine(defaultLine()), 380);
 } else {
   mascotEl.classList.remove('is-enter');
+  bubbleText.textContent = defaultLine();
 }
 if (!reducedMotion) {
   (function loop() {
@@ -369,6 +573,12 @@ function mascotLines() {
     lines.push(`오늘은 「${pick.title}」 어때요?`);
   }
   lines.push(installed.size ? `보관함에 카트리지가 ${installed.size}개 꽂혀 있어요.` : '아직 보관함이 비어 있어요.');
+  const bests = items.map((i) => ({ i, s: rec.statsOf(i.id) })).filter((x) => x.s.best != null && !x.s.lower && x.s.best > 0);
+  if (bests.length) {
+    const { i, s } = bests[Math.floor(Math.random() * bests.length)];
+    lines.push(`「${i.title}」 최고 기록은 ${s.best}점! 깰 수 있어요?`);
+  }
+  if (!rec.getName()) lines.push('카드에서 연필을 누르면 이름을 정할 수 있어요.');
   if (!navigator.onLine) return ['지금은 오프라인이에요. 꽂아 둔 카트리지만 할 수 있어요.'];
   return lines;
 }
@@ -385,9 +595,12 @@ mascotEl.addEventListener('click', () => {
   mascotEl.classList.add('is-hop');
   blink();
   hearts();
-  clearTimeout(lineTimer);
-  lineTimer = setTimeout(() => typeLine(DEFAULT_LINE), 4500);
+  scheduleDefaultLine();
 });
+function scheduleDefaultLine() {
+  clearTimeout(lineTimer);
+  lineTimer = setTimeout(() => typeLine(defaultLine()), 4500);
+}
 mascotEl.addEventListener('animationend', (e) => {
   if (e.target === mascotEl) mascotEl.classList.remove('is-hop', 'is-enter');
 });
@@ -412,6 +625,9 @@ window.addEventListener('online', () => { renderNet(); render(); });
 window.addEventListener('offline', () => { renderNet(); render(); });
 searchEl.addEventListener('input', render);
 randomBtn.addEventListener('click', playRandom);
+// 게임에서 뒤로 가기로 돌아오거나 다른 탭에서 기록이 바뀌면 다시 그린다
+window.addEventListener('pageshow', (e) => { if (e.persisted) refreshRecords(); });
+window.addEventListener('storage', (e) => { if (!e.key || e.key.startsWith('nolja:')) refreshRecords(); });
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch((err) => console.warn('서비스 워커 등록 실패', err));

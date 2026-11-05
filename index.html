@@ -49,8 +49,32 @@
         <p class="hero__lead">카트리지를 꽂아 두면 다음부터 내 기기에서 바로 열리고, 인터넷이 없어도 쓸 수 있어요.</p>
       </div>
       <div class="hero__side">
-        <span id="net" class="net"></span>
-        <button id="random" class="pbtn pbtn--yellow" type="button"><i data-icon="dice"></i>랜덤 플레이</button>
+        <section class="player" aria-label="내 플레이어 카드">
+          <div class="player__head">
+            <div class="player__who">
+              <span class="player__tag">PLAYER 1</span>
+              <div id="name-view" class="player__name-row">
+                <b id="player-name" class="player__name"></b>
+                <button id="name-edit" class="player__edit" type="button" aria-label="이름 바꾸기" title="이름 바꾸기"><i data-icon="pencil"></i></button>
+              </div>
+              <form id="name-form" class="player__form" hidden>
+                <label class="sr-only" for="name-input">이름</label>
+                <input id="name-input" type="text" maxlength="12" autocomplete="off" placeholder="이름 (12자까지)">
+                <button class="pbtn pbtn--blue" type="submit">저장</button>
+              </form>
+            </div>
+            <span id="player-level" class="player__level"></span>
+          </div>
+          <div class="player__stats">
+            <div class="stat"><b id="stat-plays">0</b><span>판 플레이</span></div>
+            <div class="stat"><b id="stat-time">0분</b><span>플레이 시간</span></div>
+            <div class="stat"><b id="stat-carts">0</b><span>꽂은 카트리지</span></div>
+          </div>
+        </section>
+        <div class="hero__actions">
+          <span id="net" class="net"></span>
+          <button id="random" class="pbtn pbtn--yellow" type="button"><i data-icon="dice"></i>랜덤 플레이</button>
+        </div>
       </div>
     </section>
 
@@ -65,6 +89,22 @@
 
     <p id="message" class="empty" hidden></p>
     <ul id="shelf" class="shelf" aria-live="polite"></ul>
+
+    <section id="records" class="records" aria-labelledby="records-title" hidden>
+      <div class="records__head">
+        <h2 id="records-title" class="records__title">세이브 기록 · <span id="records-name"></span></h2>
+        <span id="records-count" class="records__count"></span>
+      </div>
+      <ol id="slots" class="slots"></ol>
+      <div class="records__foot">
+        <p class="records__note">기록은 이 브라우저에만 저장돼요. 다른 기기로 옮기려면 세이브를 내보내서 거기서 가져오세요.</p>
+        <div class="records__actions">
+          <button id="save-export" class="pbtn" type="button"><i data-icon="download"></i>세이브 내보내기</button>
+          <button id="save-import" class="pbtn" type="button"><i data-icon="upload"></i>세이브 가져오기</button>
+          <input id="save-file" type="file" accept=".json,application/json" hidden>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="foot">
@@ -85,6 +125,7 @@
       <h2 class="cart__title"></h2>
       <p class="cart__desc"></p>
       <p class="cart__meta"></p>
+      <p class="cart__record" hidden></p>
       <div class="gauge" hidden></div>
       <div class="cart__actions">
         <a class="pbtn pbtn--blue" data-play><i data-icon="play"></i>플레이</a>

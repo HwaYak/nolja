@@ -23,7 +23,8 @@ node scripts/dev.mjs
 ```
 index.html               게임 목록 허브
 hub/                     허브 화면 (hub.css, hub.js)
-shared/nolja.js          게임용 공용 SDK: "← 놀자" 버튼, Nolja.save/load/remove
+shared/nolja.js          게임용 공용 SDK: "← 놀자" 버튼, 세이브, 기록(판 수·시간·최고 기록)
+shared/records.js        허브용 기록 모듈: 플레이어 카드, 기록 탭, 세이브 내보내기/가져오기
 shared/downloads.js      다운로드 관리자: 받기 / 업데이트 / 삭제
 sw.js                    서비스 워커: 받아 둔 게임은 캐시에서, 나머지는 네트워크 우선
 manifest.webmanifest     앱 설치 정보
@@ -68,15 +69,25 @@ node scripts/make-icons.mjs
    - `color`는 허브 카드의 파스텔 색입니다: `sky`, `lavender`, `mint`, `peach`, `butter`, `pink`. 비우면 id에 따라 자동으로 정해집니다.
    - `"featured": true`인 게임은 허브 맨 앞에 넓은 카드로 나옵니다. 없으면 목록 첫 게임이 그 자리에 옵니다.
    - 리소스 목록, 용량, 버전은 빌드가 자동으로 계산합니다. 따로 적지 않습니다.
-4. 게임 페이지에서 공용 SDK를 불러오면 "← 놀자" 버튼과 세이브 기능을 쓸 수 있습니다.
+4. 게임 페이지에서 공용 SDK를 불러오면 "← 놀자" 버튼, 세이브, 기록 기능을 쓸 수 있습니다.
 
    ```html
    <script src="../../shared/nolja.js"></script>
    <script>
-     Nolja.save('best', 120);
-     const best = Nolja.load('best', 0);
+     // 한 판 시작과 끝에 부르면 허브의 플레이어 카드와 기록 탭에 나옵니다.
+     Nolja.start();                                   // 판 수 +1, 플레이 시간 재기 시작
+     const { best, isBest } = Nolja.finish({ score: 120 });
+     // 낮을수록 좋은 기록(걸린 시간 등)은 Nolja.finish({ score: 42.5, lower: true })
+     Nolja.stats();                                   // { plays, time, best, lower, last }
+
+     // 그 밖의 게임 데이터는 자유롭게 저장합니다.
+     Nolja.save('stage', 3);
+     const stage = Nolja.load('stage', 1);
    </script>
    ```
+
+   - 플레이 시간은 화면이 보이는 동안만 셉니다.
+   - 기록은 그 브라우저에만 남습니다. 허브의 "기록" 탭에서 세이브 파일로 내보내고 가져올 수 있습니다.
 
 5. 게임 안에서 쓰는 파일은 **게임 폴더 안에** 두고 상대 경로로 불러옵니다. 그래야 "받기"할 때 함께 저장되어 오프라인에서도 동작합니다.
 

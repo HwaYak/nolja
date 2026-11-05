@@ -32,10 +32,9 @@
   const startScreen = $('start');
   const resultScreen = $('result');
 
-  const save = window.Nolja ? window.Nolja.save : () => {};
-  const load = window.Nolja ? window.Nolja.load : (_k, f) => f;
-
-  let best = Number(load('best', 0)) || 0;
+  // 기록은 놀자 SDK 가 남긴다. (허브의 플레이어 카드·기록 탭에 보임)
+  const N = window.Nolja;
+  let best = (N && N.stats().best) || 0;
   let score = 0;
   let timeLeft = DURATION;
   let running = false;
@@ -245,6 +244,7 @@
     scoreEl.textContent = '0';
     startScreen.hidden = true;
     resultScreen.hidden = true;
+    if (N) N.start();
     running = true;
     renderTime();
     lastTs = performance.now();
@@ -254,10 +254,13 @@
   function finish() {
     running = false;
     renderTime();
-    const isBest = score > best;
-    if (isBest) {
+    let isBest = score > best;
+    if (N) {
+      const r = N.finish({ score });
+      isBest = r.isBest && score > 0;
+      best = r.best ?? best;
+    } else if (isBest) {
       best = score;
-      save('best', best);
     }
     setTimeout(() => {
       clearBalloons();

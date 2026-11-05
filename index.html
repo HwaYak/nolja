@@ -4,12 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>놀자</title>
-  <meta name="description" content="심심할 때 하나씩 꺼내 하는 웹 게임 모음">
-  <meta name="theme-color" content="#f6f9ff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0f1524" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="받아 두면 오프라인에서도 열리는 도트 감성 웹 게임·도구 모음">
+  <meta name="theme-color" content="#f3f7ff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111a30" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preload" href="shared/fonts/Galmuri11-Bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="shared/fonts/galmuri.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="hub/hub.css">
   <script type="module" src="hub/hub.js"></script>
@@ -17,88 +19,64 @@
 <body>
   <header class="top">
     <div class="top__inner">
-      <a class="logo" href="./" aria-label="놀자 홈">
-        <img src="icons/icon.svg" alt="" width="32" height="32">
-        <span>놀자</span>
-      </a>
-      <label class="search">
-        <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <span class="sr-only">게임 검색</span>
-        <input id="search" type="search" placeholder="게임 찾기" autocomplete="off">
-      </label>
-      <button id="install" class="btn btn--soft btn--sm" type="button" hidden>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>
-        <span>앱 설치</span>
-      </button>
+      <a class="logo" href="./" aria-label="놀자 홈">놀자</a>
+      <nav id="tabs" class="tabs" aria-label="분류"></nav>
+      <div class="memory" title="보관함에 꽂아 둔 카트리지">
+        <span class="memory__label">메모리 카드</span>
+        <span id="memory-bar" class="memory__bar" aria-hidden="true"></span>
+        <span id="memory-text" class="memory__text"></span>
+      </div>
     </div>
   </header>
 
   <main class="wrap">
     <section class="hero">
       <div class="hero__text">
-        <p class="eyebrow">웹 게임 모음</p>
-        <h1>오늘은 뭐 하고<br>놀까?</h1>
-        <p class="lead">게임을 받아 두면 다음부터 내 기기에서 바로 열리고, 인터넷이 없어도 할 수 있어요.</p>
+        <h1>오늘은 뭐 하고 놀까?</h1>
+        <p>카트리지를 꽂아 두면 다음부터 내 기기에서 바로 열리고, 인터넷이 없어도 쓸 수 있어요.</p>
       </div>
-      <dl class="stats">
-        <div class="stat">
-          <dt>게임</dt>
-          <dd id="stat-games">0</dd>
-        </div>
-        <div class="stat">
-          <dt>받아 둔 게임</dt>
-          <dd id="stat-installed">0</dd>
-        </div>
-        <div class="stat">
-          <dt>사용 중</dt>
-          <dd id="stat-usage">0 KB</dd>
-        </div>
-        <div class="stat stat--net">
-          <dt>연결</dt>
-          <dd><span id="net" class="net"></span></dd>
-        </div>
-      </dl>
-      <span class="bubble bubble--1" aria-hidden="true"></span>
-      <span class="bubble bubble--2" aria-hidden="true"></span>
-      <span class="bubble bubble--3" aria-hidden="true"></span>
+      <div class="hero__side">
+        <span id="net" class="net"></span>
+        <button id="random" class="pbtn pbtn--yellow" type="button"><i data-icon="dice"></i>랜덤 플레이</button>
+      </div>
     </section>
 
-    <nav id="chips" class="chips" aria-label="게임 분류"></nav>
+    <div class="toolbar">
+      <label class="search">
+        <i data-icon="search"></i>
+        <span class="sr-only">검색</span>
+        <input id="search" type="search" placeholder="카트리지 찾기" autocomplete="off">
+      </label>
+      <button id="install" class="pbtn" type="button" hidden><i data-icon="download"></i>앱 설치</button>
+    </div>
 
     <p id="message" class="empty" hidden></p>
-    <ul id="games" class="bento" aria-live="polite"></ul>
+    <ul id="shelf" class="shelf" aria-live="polite"></ul>
   </main>
 
   <footer class="foot">
-    <p>놀자 · <a href="https://github.com/HwaYak/nolja">GitHub</a></p>
+    <p>놀자 · <a href="https://github.com/HwaYak/nolja">GitHub</a> · 글꼴 <a href="https://github.com/quiple/galmuri">갈무리</a></p>
   </footer>
 
-  <template id="card">
-    <li class="card">
-      <a class="card__media" data-play tabindex="-1">
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <template id="cart">
+    <li class="cart">
+      <div class="cart__head">
+        <span class="kind"></span>
+        <span class="state"></span>
+      </div>
+      <a class="cart__label" data-play tabindex="-1">
         <img alt="" loading="lazy">
       </a>
-      <div class="card__body">
-        <div class="card__top">
-          <h2 class="card__title"></h2>
-          <span class="status"></span>
-        </div>
-        <p class="card__desc"></p>
-        <p class="card__meta"></p>
-        <div class="progress" hidden><span></span></div>
-        <div class="card__actions">
-          <a class="btn btn--primary" data-play>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>
-            <span>플레이</span>
-          </a>
-          <button class="btn btn--soft" type="button" data-download>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>
-            <span data-label>받기</span>
-          </button>
-          <button class="btn btn--icon" type="button" data-remove aria-label="받아 둔 게임 삭제" hidden>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 11v6m4-6v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          </button>
-        </div>
+      <h2 class="cart__title"></h2>
+      <p class="cart__desc"></p>
+      <p class="cart__meta"></p>
+      <div class="gauge" hidden></div>
+      <div class="cart__actions">
+        <a class="pbtn pbtn--blue" data-play><i data-icon="play"></i>플레이</a>
+        <button class="pbtn" type="button" data-download><i data-icon="download"></i><span data-label>꽂기</span></button>
+        <button class="pbtn pbtn--icon" type="button" data-remove title="빼기 (받아 둔 파일 삭제)" aria-label="카트리지 빼기" hidden><i data-icon="eject"></i></button>
       </div>
     </li>
   </template>

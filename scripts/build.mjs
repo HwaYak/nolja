@@ -30,6 +30,9 @@ const GAME_ID = /^[a-z0-9][a-z0-9-]*$/;
 // 허브 카드에 쓸 수 있는 파스텔 색 (hub/hub.css 의 .tone-* 와 맞춘다)
 const COLORS = new Set(['sky', 'lavender', 'mint', 'peach', 'butter', 'pink']);
 
+// 카트리지 종류 (hub/hub.js 의 KIND_LABELS 와 맞춘다)
+const KINDS = new Set(['game', 'tool']);
+
 const toPosix = (p) => p.split(path.sep).join('/');
 
 async function walk(dir, base = dir) {
@@ -94,6 +97,7 @@ async function buildGame(id) {
 
   return {
     id,
+    kind: KINDS.has(meta.kind) ? meta.kind : 'game',
     title: String(meta.title),
     description: String(meta.description ?? ''),
     thumbnail: meta.thumbnail ? String(meta.thumbnail) : null,

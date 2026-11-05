@@ -45,12 +45,14 @@ scripts/dev.mjs          개발 서버
      "title": "게임 이름",
      "description": "한두 줄 설명",
      "thumbnail": "thumb.svg",
+     "kind": "game",
      "tags": ["캐주얼"],
      "color": "sky",
      "order": 100
    }
    ```
 
+   - `kind`는 카트리지 종류입니다: `game`(게임), `tool`(도구). 비우면 `game`.
    - `order`가 작을수록 목록 앞에 나옵니다.
    - `color`는 허브 카드의 파스텔 색입니다: `sky`, `lavender`, `mint`, `peach`, `butter`, `pink`. 비우면 id에 따라 자동으로 정해집니다.
    - `"featured": true`인 게임은 허브 맨 앞에 넓은 카드로 나옵니다. 없으면 목록 첫 게임이 그 자리에 옵니다.

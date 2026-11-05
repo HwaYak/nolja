@@ -31,19 +31,33 @@
     try { localStorage.removeItem(prefix + key); } catch { /* 무시 */ }
   }
 
+  // 허브와 같은 도트 글꼴을 게임 페이지에서도 쓸 수 있게 불러온다.
+  function addFont() {
+    const href = new URL('fonts/galmuri.css', document.currentScript?.src ?? new URL('../../shared/', location.href)).href;
+    if (document.querySelector(`link[href="${href}"]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  }
+  addFont();
+
   function addBackButton() {
     if (document.body.dataset.noljaBack === 'off') return;
     const a = document.createElement('a');
     a.href = hubUrl;
-    a.textContent = '← 놀자';
-    a.setAttribute('aria-label', '놀자 게임 목록으로 돌아가기');
+    a.textContent = '◀ 놀자';
+    a.setAttribute('aria-label', '놀자 목록으로 돌아가기');
     Object.assign(a.style, {
       position: 'fixed', top: 'max(10px, env(safe-area-inset-top))', left: '10px', zIndex: '2147483000',
-      padding: '6px 12px', borderRadius: '999px',
-      background: 'rgba(0,0,0,.55)', color: '#fff',
-      font: '700 14px/1.2 system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif',
-      textDecoration: 'none', backdropFilter: 'blur(6px)',
+      padding: '7px 10px 6px',
+      background: '#ffffff', color: '#1b2a4a',
+      border: '2px solid #1b2a4a', boxShadow: '3px 3px 0 #1b2a4a',
+      font: '700 13px/1 "Galmuri11", monospace',
+      textDecoration: 'none',
     });
+    a.addEventListener('pointerdown', () => { a.style.translate = '2px 2px'; a.style.boxShadow = '1px 1px 0 #1b2a4a'; });
+    a.addEventListener('pointerleave', () => { a.style.translate = ''; a.style.boxShadow = '3px 3px 0 #1b2a4a'; });
     document.body.appendChild(a);
   }
 

@@ -1,16 +1,19 @@
+# 빌드 결과 (games.json, files.json 도 빌드가 만든다)
+_site/
+
 # OS
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Editors
+# Editors / tools
+.claude/
 .vscode/
 .idea/
 *.swp
 
-# Node (빌드 도구를 쓰게 될 경우)
+# Node
 node_modules/
-dist/
 
 # Logs
 *.log

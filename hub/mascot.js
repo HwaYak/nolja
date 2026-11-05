@@ -19,7 +19,7 @@ export const PALETTE = {
   N: '#2a3a66', // 옷
 };
 
-export const ICON_BG = '#dbe8ff';
+export const ICON_BG = '#3d7bfa'; // 아이콘 바탕: 놀자 파랑
 
 const pad = (rows) => rows.map((r) => (r.length === 20 ? `..${r}..` : r));
 
@@ -58,24 +58,24 @@ export const BLINK = {
   11: pad(['DHHhSSSSSSSSSSSShHHD'])[0],
 };
 
-// 16×16 얼굴 (탭 아이콘, 로고용)
-export const HEAD = [
+// 16×16 금색 별 머리핀 (앱 아이콘, 탭 아이콘, 로고)
+export const STAR = [
   '................',
-  '....DDDDDDDD....',
-  '...DHHlHHHHYD...',
-  '..DHHlHHHHHYyD..',
-  '..DHHHHHHHHHHD..',
-  '.DHHhSShhSShHHD.',
-  '.DHhSDDSSDDShHD.',
-  '.DHhSIWSSIWShHD.',
-  '.DHhPiiSSiiPhHD.',
-  '.DHHSSSMMSSSHHD.',
-  '.DHHHDsSSsDHHHD.',
-  '.DHHDWWYYWWDHHD.',
-  '.DvHDNNNNNNDHvD.',
-  '.DvvDNNNNNNDvvD.',
-  '..DDDDDDDDDDDD..',
-  '................',
+  '.......DD.......',
+  '......DYYD......',
+  '......DWYD......',
+  '.....DYWYYD.....',
+  'DDDDDYYWYYYDDDDD',
+  'DYYYYYYYYYYYYYyD',
+  '.DYYYYYYYYYYYyD.',
+  '..DYYYYYYYYYyD..',
+  '...DYYYYYYYYD...',
+  '...DYYYYYYYyD...',
+  '..DYYYYyyYYYyD..',
+  '..DYYYDDDDYYyD..',
+  '.DYYYD....DYyyD.',
+  '.DYyD......DyyD.',
+  '.DDD........DDD.',
 ];
 
 /** 도트 줄 배열 → SVG 문자열. bg 를 주면 '.' 을 그 색으로 채운다. */

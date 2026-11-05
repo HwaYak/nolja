@@ -1,12 +1,13 @@
-// 마스코트 도트 데이터(hub/mascot.js)로 앱 아이콘을 만든다.
-// 사용법: node scripts/make-icons.mjs  → icons/ 아래 icon.svg, favicon.svg, icon-192.png, icon-512.png, icon-maskable-512.png
+// 마스코트의 금색 별 머리핀 도트(hub/mascot.js 의 STAR)로 앱 아이콘을 만든다.
+// 사용법: node scripts/make-icons.mjs
+//   → icons/ 아래 icon.svg, favicon.svg, favicon-32.png, icon-192.png, icon-512.png, icon-maskable-512.png
 // Node 내장 모듈만 사용 (PNG 는 zlib 으로 직접 인코딩).
 
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { deflateSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
-import { BODY, HEAD, ICON_BG, PALETTE, toSvg } from '../hub/mascot.js';
+import { ICON_BG, PALETTE, STAR, toSvg } from '../hub/mascot.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'icons');
@@ -59,11 +60,13 @@ function png(rows, size, inner = size) {
   ]);
 }
 
-await writeFile(path.join(OUT, 'icon.svg'), toSvg(BODY, { bg: ICON_BG, title: '놀자' }) + '\n');
-await writeFile(path.join(OUT, 'favicon.svg'), toSvg(HEAD, { bg: ICON_BG, title: '놀자' }) + '\n');
-await writeFile(path.join(OUT, 'icon-192.png'), png(BODY, 192));
-await writeFile(path.join(OUT, 'icon-512.png'), png(BODY, 512));
-// 마스커블: 안드로이드가 가장자리를 잘라도 얼굴이 남도록 가운데 80% 안에 그린다.
-await writeFile(path.join(OUT, 'icon-maskable-512.png'), png(BODY, 512, 400));
-await writeFile(path.join(OUT, 'favicon-32.png'), png(HEAD, 32));
+const svg = toSvg(STAR, { bg: ICON_BG, title: '놀자' }) + '\n';
+await writeFile(path.join(OUT, 'icon.svg'), svg);
+await writeFile(path.join(OUT, 'favicon.svg'), svg);
+await writeFile(path.join(OUT, 'favicon-32.png'), png(STAR, 32));
+// 별이 가장자리에 붙지 않도록 약간의 여백을 둔다 (16칸 × 정수 배율).
+await writeFile(path.join(OUT, 'icon-192.png'), png(STAR, 192, 176));
+await writeFile(path.join(OUT, 'icon-512.png'), png(STAR, 512, 448));
+// 마스커블: 안드로이드가 가장자리를 원형 등으로 잘라도 별이 남도록 가운데 안쪽에 그린다.
+await writeFile(path.join(OUT, 'icon-maskable-512.png'), png(STAR, 512, 320));
 console.log('아이콘 생성 완료 → icons/');

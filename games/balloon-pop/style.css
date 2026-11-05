@@ -1,17 +1,34 @@
+/* 풍선 팡 — 놀자 도트 스타일 */
+:root {
+  --ink: #1b2a4a;
+  --red: #ff5a5f;
+  --red-dark: #c43038;
+  --yellow: #ffe08a;
+  --pixel: "Galmuri11", "Pretendard Variable", monospace;
+}
+
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 html, body {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  color: #1d2a3a;
+  color: var(--ink);
+  font-family: var(--pixel);
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-body { background: linear-gradient(#6cc1ff, #d6efff 75%, #f2fbff); }
+/* 계단식 하늘 */
+body {
+  background: linear-gradient(
+    #6cc1ff 0 20%, #7ec9ff 20% 40%, #91d2ff 40% 60%, #a6dbff 60% 80%, #bde5ff 80% 100%
+  );
+}
+
+img { image-rendering: pixelated; -webkit-user-drag: none; }
 
 .stage {
   position: fixed;
@@ -20,80 +37,85 @@ body { background: linear-gradient(#6cc1ff, #d6efff 75%, #f2fbff); }
   touch-action: none;
 }
 
+/* 도트 구름 */
 .cloud {
   position: absolute;
-  background: #fff;
-  border-radius: 999px;
-  opacity: .75;
-  filter: blur(1px);
+  width: 128px; height: 48px;
+  background: url("assets/cloud.svg") no-repeat center / contain;
+  image-rendering: pixelated;
   animation: drift linear infinite;
 }
-.cloud::before, .cloud::after {
-  content: "";
-  position: absolute;
-  background: inherit;
-  border-radius: 50%;
-}
-.cloud::before { width: 55%; height: 160%; left: 15%; bottom: 20%; }
-.cloud::after { width: 40%; height: 130%; right: 15%; bottom: 25%; }
-.cloud--1 { width: 180px; height: 48px; top: 18%; animation-duration: 70s; }
-.cloud--2 { width: 240px; height: 60px; top: 55%; animation-duration: 95s; animation-delay: -40s; }
-.cloud--3 { width: 140px; height: 38px; top: 80%; animation-duration: 60s; animation-delay: -20s; }
+.cloud--1 { top: 14%; animation-duration: 64s; }
+.cloud--2 { top: 46%; width: 176px; height: 66px; animation-duration: 90s; animation-delay: -38s; }
+.cloud--3 { top: 74%; width: 96px; height: 36px; animation-duration: 52s; animation-delay: -18s; }
+.cloud--4 { top: 30%; width: 80px; height: 30px; animation-duration: 70s; animation-delay: -55s; opacity: .8; }
 @keyframes drift {
-  from { transform: translateX(-280px); }
-  to { transform: translateX(calc(100vw + 280px)); }
+  from { transform: translateX(-200px); }
+  to { transform: translateX(calc(100vw + 200px)); }
 }
 
+/* 풍선 */
 .balloon {
   position: absolute;
   left: 0;
   top: 0;
   cursor: pointer;
   will-change: transform;
-  -webkit-user-drag: none;
 }
-.balloon.is-popped {
+.balloon.is-popped { visibility: hidden; pointer-events: none; }
+
+/* 터질 때 튀는 도트 조각 */
+.bit {
+  position: absolute;
+  width: 8px; height: 8px;
   pointer-events: none;
-  animation: pop .18s ease-out forwards;
+  background: var(--c, #fff);
+  box-shadow: 0 0 0 2px var(--ink);
+  animation: burst .36s steps(4) forwards;
 }
-@keyframes pop {
-  to { opacity: 0; scale: 1.6; }
+@keyframes burst {
+  to { translate: var(--dx) var(--dy); opacity: 0; scale: .5; }
 }
 
 .float-text {
   position: absolute;
-  font-weight: 900;
-  font-size: 26px;
+  font-family: var(--pixel); font-weight: 700; font-size: 22px; line-height: 1;
   pointer-events: none;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, .15);
-  animation: rise .7s ease-out forwards;
+  color: #fff;
+  text-shadow: 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 2px 0 var(--ink), 0 -2px 0 var(--ink), 2px 2px 0 var(--ink);
+  animation: rise .7s steps(5) forwards;
 }
-.float-text--plus { color: #fff; }
-.float-text--gold { color: #ffd447; font-size: 34px; }
-.float-text--minus { color: #2b2733; }
-@keyframes rise {
-  to { transform: translateY(-50px); opacity: 0; }
-}
+.float-text--gold { color: var(--yellow); font-size: 30px; }
+.float-text--minus { color: #ffb3b3; }
+@keyframes rise { to { translate: 0 -48px; opacity: 0; } }
 
+/* HUD */
 .hud {
   position: fixed;
   top: max(10px, env(safe-area-inset-top));
   right: 10px;
   display: flex;
-  gap: 8px;
+  gap: 10px;
   z-index: 5;
   pointer-events: none;
 }
-.hud__item {
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .8);
-  font-size: 14px;
-  font-weight: 600;
+.hud__box {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px 5px;
+  background: #fff;
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
 }
-.hud__item b { font-size: 18px; margin-left: 4px; font-variant-numeric: tabular-nums; }
-.hud.is-hurry .hud__item:last-child { background: #ff5a5f; color: #fff; }
+.hud__label { font-size: 12px; }
+.hud__value { font-size: 20px; font-weight: 700; min-width: 2ch; text-align: right; font-variant-numeric: tabular-nums; }
+.gauge { display: flex; gap: 2px; padding: 2px; border: 2px solid var(--ink); }
+.gauge i { width: 5px; height: 12px; background: #e3ebf7; }
+.gauge i.on { background: #4d8dff; }
+.hud__box--time.is-hurry { animation: hurry .5s steps(1) infinite; }
+.hud__box--time.is-hurry .gauge i.on { background: var(--red); }
+@keyframes hurry { 50% { background: #ffd6d6; } }
 
+/* 시작·결과 화면 */
 .screen {
   position: fixed;
   inset: 0;
@@ -101,51 +123,69 @@ body { background: linear-gradient(#6cc1ff, #d6efff 75%, #f2fbff); }
   place-items: center;
   padding: 16px;
   z-index: 10;
-  background: rgba(20, 50, 90, .25);
+  background: rgba(27, 42, 74, .35);
 }
-.screen[hidden] { display: none; }
 
 .panel {
-  width: min(360px, 100%);
-  padding: 28px 24px 24px;
-  border-radius: 24px;
+  position: relative;
+  width: min(340px, 100%);
+  padding: 24px 22px 22px;
   background: #fff;
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
   text-align: center;
-  box-shadow: 0 20px 50px rgba(20, 50, 90, .25);
+  animation: panel-in .3s steps(3);
 }
-.panel h1, .panel h2 { margin: 0 0 8px; font-size: 2.2rem; letter-spacing: -0.03em; color: #ff5a5f; }
-.panel p { margin: 0 0 12px; color: #4a5a6a; }
+@keyframes panel-in { from { translate: 0 16px; opacity: 0; } }
+.panel__hero { display: block; margin: -8px auto 6px; width: 48px; height: 64px; animation: bounce 1s steps(2) infinite; }
+@keyframes bounce { 50% { translate: 0 -4px; } }
+.panel h1, .panel h2 {
+  margin: 0 0 10px;
+  font-size: 34px; font-weight: 700; line-height: 1.1; letter-spacing: 0;
+  color: var(--red);
+  text-shadow: 3px 3px 0 var(--ink);
+}
+.panel p { margin: 0 0 12px; font-size: 13px; line-height: 1.6; color: #3a4a6b; }
 
 .legend {
   list-style: none;
-  margin: 0 0 16px;
-  padding: 0;
+  margin: 0 0 14px;
+  padding: 10px 0;
   display: flex;
   justify-content: center;
   gap: 18px;
-  font-weight: 800;
+  border: 2px dashed #b8c6df;
+  font-size: 15px; font-weight: 700;
 }
 .legend li { display: flex; align-items: center; gap: 4px; }
-.legend img { width: 26px; height: 36px; }
+.legend img { width: 24px; height: 32px; }
 
-.best b { color: #1d2a3a; }
-.final { font-size: 1.4rem; }
-.final b { font-size: 3.4rem; color: #1d2a3a; font-variant-numeric: tabular-nums; }
-.new-best { color: #e0a100 !important; font-weight: 900; font-size: 1.1rem; }
+.best b { color: var(--ink); font-size: 15px; }
+.final { font-size: 18px !important; color: var(--ink) !important; }
+.final b { font-size: 52px; line-height: 1; font-variant-numeric: tabular-nums; }
+.new-best { color: #c99a00 !important; font-size: 15px !important; font-weight: 700; animation: blink .6s steps(1) infinite; }
+@keyframes blink { 50% { opacity: .2; } }
 
-.big-btn {
-  margin-top: 4px;
+.pbtn {
   width: 100%;
   min-height: 52px;
-  border: 0;
-  border-radius: 999px;
-  background: #ff5a5f;
+  margin-top: 4px;
+  font-family: var(--pixel); font-size: 18px; font-weight: 700;
   color: #fff;
-  font: inherit;
-  font-size: 1.2rem;
-  font-weight: 900;
+  background: var(--red);
+  border: 3px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
   cursor: pointer;
-  box-shadow: 0 4px 0 #c9303a;
 }
-.big-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #c9303a; }
-.big-btn:focus-visible { outline: 3px solid #4da3ff; outline-offset: 3px; }
+.pbtn:hover { background: #ff6e72; }
+.pbtn:active { translate: 3px 3px; box-shadow: 1px 1px 0 var(--ink); }
+.pbtn:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
+
+@media (max-width: 420px) {
+  .hud { left: 10px; right: 10px; justify-content: flex-end; top: max(56px, env(safe-area-inset-top)); }
+  .hud__value { font-size: 17px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cloud, .panel, .panel__hero, .hud__box--time.is-hurry, .new-best { animation: none !important; }
+}

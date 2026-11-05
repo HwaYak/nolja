@@ -32,11 +32,19 @@
 
   <main class="wrap">
     <section class="hero">
-      <button id="mascot" class="mascot" type="button" aria-label="마스코트에게 말 걸기"></button>
       <div class="hero__text">
-        <div class="bubble">
-          <h1>오늘은 뭐 하고 놀까?</h1>
-          <p id="mascot-line" class="bubble__line" aria-live="polite" hidden></p>
+        <div class="stage">
+          <button id="mascot" class="mascot is-enter" type="button" aria-label="마스코트에게 말 걸기">
+            <span id="mascot-art" class="mascot__art"></span>
+            <span class="spark spark--1"></span>
+            <span class="spark spark--2"></span>
+            <span class="spark spark--3"></span>
+          </button>
+          <div class="bubble">
+            <h1 class="sr-only">오늘은 뭐 하고 놀까?</h1>
+            <p id="bubble-text" class="bubble__text" aria-hidden="true">오늘은 뭐 하고 놀까?</p>
+            <p id="mascot-say" class="sr-only" aria-live="polite"></p>
+          </div>
         </div>
         <p class="hero__lead">카트리지를 꽂아 두면 다음부터 내 기기에서 바로 열리고, 인터넷이 없어도 쓸 수 있어요.</p>
       </div>
